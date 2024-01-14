@@ -49,7 +49,7 @@ scanCodeRecordHeaders = ["Timestamp", "Delta", "PreviousScanCode", "ScanCode"]
 scanCodeCsv = open('scanCodeRecord.csv', 'a', newline='')
 scanCodeWriter = csv.writer(scanCodeCsv, delimiter=",", quotechar='"', quoting=csv.QUOTE_ALL )
 
-print('"Timestamp","Delta","PrevScanCode","ScanCode"')
+print('"Timestamp","Delta","PreviousScanCode","ScanCode"')
 
 timer = Manager([scanCodeCsv, None], [scanCodeWriter, None])
 with Listener(on_press=timer.press) as listener:
