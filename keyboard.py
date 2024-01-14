@@ -9,8 +9,6 @@ import csv
 """ TODO: 
     * Need to keep track of the raw keystrokes (virtual key codes) AND the outcome (printed UTF-8)
     * Include key down / key up timings, as this is kinematically significant as well
-    * Change the even/odd design to an explicit ring buffer
-    * Dump outputs to a CSV, because an n^2 table is too impractical
 """
 class Manager:
     def __init__(self, csvFiles, csvWriters):
