@@ -10,6 +10,19 @@ import csv
     * Need to keep track of the raw keystrokes (virtual key codes) AND the outcome (printed UTF-8)
     * Include key down / key up timings, as this is kinematically significant as well
 """
+
+def reflectedOutput():
+    """
+        We need to check the previous vkc, and if it is a modifier, we need to keep going back until we find the last printable character
+        Also need to check if CAPS is activated
+        Non-printing modifiers: CTRL, ALT, WIN, FN
+        Printing modifiers: SHIFT
+        Note: SHIFT can be part of a non-printing modifier sequence, e.g. CTRL + SHIFT + ALT + WIN + L (is this Tony Hawk's Pro Keyboarder?)
+
+        Customization drivers like Capsicain could very well mean that the user has non-printing sequences of their own, but that is beyond the scope atm
+    """
+    pass
+
 class Manager:
     def __init__(self, csvFiles, csvWriters):
         self.keytimes = [time.perf_counter()] # Note: Windows may reduce the precision to as low as 20ms based on various factors.
@@ -42,6 +55,7 @@ class Manager:
 
         record = '"{}","{}","{}","{}"'.format(str(self.keytimes[-1]), str(self.keytimes[-1] - self.keytimes[-2]), str(self.scancodes[-2]), str(self.scancodes[-1]))
         self.csvWriters[0].writerow([str(self.keytimes[-1]), str(self.keytimes[-1] - self.keytimes[-2]), str(self.scancodes[-2]), str(self.scancodes[-1])])
+
         if len(self.scancodes) % 10 == 0: self.csvFiles[0].flush()
         print(record)
 
