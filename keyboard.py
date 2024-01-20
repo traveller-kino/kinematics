@@ -12,6 +12,7 @@ import csv
 """
 
 def reflectedOutput():
+    modifierInformation = dict()
     """
         We need to check the previous vkc, and if it is a modifier, we need to keep going back until we find the last printable character
         Also need to check if CAPS is activated
@@ -20,6 +21,9 @@ def reflectedOutput():
         Note: SHIFT can be part of a non-printing modifier sequence, e.g. CTRL + SHIFT + ALT + WIN + L (is this Tony Hawk's Pro Keyboarder?)
 
         Customization drivers like Capsicain could very well mean that the user has non-printing sequences of their own, but that is beyond the scope atm
+    """
+    """
+        Need to experimentally obtain vkcs for modifier keys, including left/right variants, and F keys
     """
     pass
 
@@ -30,6 +34,7 @@ class Manager:
         self.utfoutput = [0]
         self.csvFiles = csvFiles
         self.csvWriters = csvWriters
+        self.capslock = False # Normally the responsibility of reflectedOutput. However, it would degrade the program performance d/t linear iterations to find the last caps lock press.
 
     def press(self, key):
         isFnOrMod = None
