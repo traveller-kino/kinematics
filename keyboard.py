@@ -16,8 +16,8 @@ def reflectedOutput():
     """
         We need to check the previous vkc, and if it is a modifier, we need to keep going back until we find the last printable character
         Also need to check if CAPS is activated
-        Non-printing modifiers: CTRL, ALT, WIN, FN
-        Printing modifiers: SHIFT
+        Non-printing modifiers: CTRL, ALT, WIN, FN (162|163|164|165|91|9|27|112|113|114|115|116|117|118|119|120|121|122|123|124)
+        Printing modifiers: SHIFT (160|161)
         Note: SHIFT can be part of a non-printing modifier sequence, e.g. CTRL + SHIFT + ALT + WIN + L (is this Tony Hawk's Pro Keyboarder?)
 
         Customization drivers like Capsicain could very well mean that the user has non-printing sequences of their own, but that is beyond the scope atm
@@ -34,7 +34,8 @@ class Manager:
         self.utfoutput = [0]
         self.csvFiles = csvFiles
         self.csvWriters = csvWriters
-        self.capslock = False # Normally the responsibility of reflectedOutput. However, it would degrade the program performance d/t linear iterations to find the last caps lock press.
+        self.capslock = False # No reasonable way to determine if caps lock is active, so assume it is initially off.
+        self.shifted = None # TODO: Shift can be held in for multiple key presses without being logged. Should this be converted into a point-in-time check?
 
     def press(self, key):
         isFnOrMod = None
@@ -45,7 +46,7 @@ class Manager:
         except AttributeError:
             scanCode = key.value.vk
             isFnOrMod = True
-        
+
         currentPrecisionTime = time.perf_counter()
         if ( currentPrecisionTime - (self.keytimes[-1]) ) > 2.5:
             # Keystroke is stale. Associatively insert a "stub", so that analyzers know to dispose of as well.
@@ -60,6 +61,10 @@ class Manager:
 
         record = '"{}","{}","{}","{}"'.format(str(self.keytimes[-1]), str(self.keytimes[-1] - self.keytimes[-2]), str(self.scancodes[-2]), str(self.scancodes[-1]))
         self.csvWriters[0].writerow([str(self.keytimes[-1]), str(self.keytimes[-1] - self.keytimes[-2]), str(self.scancodes[-2]), str(self.scancodes[-1])])
+
+        # Update shift modifier after writing, so that we don't need to inspect the scancodes list
+        if scanCode == 160 or scanCode == 161: self.shifted = True
+        else: self.shifted = False
 
         if len(self.scancodes) % 10 == 0: self.csvFiles[0].flush()
         print(record)
