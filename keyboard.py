@@ -36,6 +36,8 @@ class Manager:
         self.csvWriters = csvWriters
         self.capslock = False # No reasonable way to determine if caps lock is active, so assume it is initially off.
         self.shifted = None # TODO: Shift can be held in for multiple key presses without being logged. Should this be converted into a point-in-time check?
+        # TODO: track release events for SHIFT, and also implement intra-keystroke timings
+        # https://pynput.readthedocs.io/en/latest/keyboard.html
 
     def press(self, key):
         isFnOrMod = None
