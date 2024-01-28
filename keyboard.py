@@ -2,6 +2,7 @@ import pynput, time
 from time import perf_counter
 from pynput.keyboard import Key,Listener
 import csv
+from threading import Lock
 
 # from pathlib import Path
 # import shutil
@@ -35,6 +36,7 @@ class Manager:
         self.csvFiles = csvFiles
         self.csvWriters = csvWriters
         self.capslock = False # No reasonable way to determine if caps lock is active, so assume it is initially off.
+        self.shiftedMutex = Lock()
         self.shifted = None # TODO: Shift can be held in for multiple key presses without being logged. Should this be converted into a point-in-time check?
         # TODO: track release events for SHIFT, and also implement intra-keystroke timings
         # https://pynput.readthedocs.io/en/latest/keyboard.html
@@ -65,11 +67,24 @@ class Manager:
         self.csvWriters[0].writerow([str(self.keytimes[-1]), str(self.keytimes[-1] - self.keytimes[-2]), str(self.scancodes[-2]), str(self.scancodes[-1])])
 
         # Update shift modifier after writing, so that we don't need to inspect the scancodes list
-        if scanCode == 160 or scanCode == 161: self.shifted = True
-        else: self.shifted = False
+        if scanCode == 160 or scanCode == 161:
+            with self.shiftedMutex:
+                self.shifted = True
 
         if len(self.scancodes) % 10 == 0: self.csvFiles[0].flush()
         print(record)
+    
+    def release(self, key):
+        try:
+            scanCode = key.vk
+            isFnOrMod = False
+        except AttributeError:
+            scanCode = key.value.vk
+            isFnOrMod = True
+        if scanCode == 160 or scanCode == 161:
+            with self.shiftedMutex:
+                self.shifted = False
+        pass
 
 scanCodeRecordHeaders = ["Timestamp", "Delta", "PreviousScanCode", "ScanCode"]
 scanCodeCsv = open('scanCodeRecord.csv', 'a', newline='')
@@ -78,7 +93,7 @@ scanCodeWriter = csv.writer(scanCodeCsv, delimiter=",", quotechar='"', quoting=c
 print('"Timestamp","Delta","PreviousScanCode","ScanCode"')
 
 timer = Manager([scanCodeCsv, None], [scanCodeWriter, None])
-with Listener(on_press=timer.press) as listener:
+with Listener(on_press=timer.press, on_release=timer.release) as listener:
     listener.join()
 
 scanCodeCsv.close()
